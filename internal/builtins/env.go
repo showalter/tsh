@@ -18,17 +18,13 @@
 package builtins
 
 import (
-	"errors"
-	"os"
+	"fmt"
 
 	. "github.com/showalter/tsh/internal/env"
 )
 
-func Exit(_ []string, _ Environment) error {
-	os.Exit(0)
+func Env(args []string, env Environment) error {
+	fmt.Print(env)
 
-	// This is unreachable, but it is necessary for this function to return
-	// an error to be considered a BuiltInFunction. The exit builtin is a
-	// special case in this regard.
-	return errors.New("")
+	return nil
 }

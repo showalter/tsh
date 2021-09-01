@@ -6,9 +6,11 @@
  * of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -18,13 +20,41 @@ package builtins
 import (
 	"os"
 
-	. "github.com/showalter/tsh/internal/errors"
+	. "github.com/showalter/tsh/internal/env"
+	_ "github.com/showalter/tsh/internal/errors"
 )
 
-func Cd(args []string) error {
-	if len(args) < 2 {
-		return PathError
+var homeDirectory string = os.Getenv("HOME")
+
+func Cd(args []string, env Environment) error {
+	// Handle going to $HOME if no arguments are given.
+	if len(args) == 1 {
+		return os.Chdir(homeDirectory)
 	}
 
-	return os.Chdir(args[1])
+	var newDirectory string
+
+	switch args[1] {
+	case "~": // Equivalent to $HOME
+		newDirectory = homeDirectory
+	case "-":
+		newDirectory = env.Get("OLDPWD")
+	default:
+		newDirectory = args[1]
+	}
+
+	// Go ahead and change directory
+	err := os.Chdir(newDirectory)
+
+	// If that worked out, update environment variables
+	if err == nil {
+		env.Put("OLDPWD", env.Get("PWD"))
+
+		pwd, getwdErr := os.Getwd()
+		if getwdErr == nil {
+			env.Put("PWD", pwd)
+		}
+	}
+
+	return err
 }

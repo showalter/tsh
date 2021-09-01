@@ -15,20 +15,24 @@
  * limitations under the License.
  */
 
-package builtins
+package env
 
-import (
-	"errors"
-	"os"
+type Environment map[string]string
 
-	. "github.com/showalter/tsh/internal/env"
-)
+func (env Environment) Put(name, value string) {
+	env[name] = value
+}
 
-func Exit(_ []string, _ Environment) error {
-	os.Exit(0)
+func (env Environment) Get(name string) string {
+	return env[name]
+}
 
-	// This is unreachable, but it is necessary for this function to return
-	// an error to be considered a BuiltInFunction. The exit builtin is a
-	// special case in this regard.
-	return errors.New("")
+func (env Environment) String() string {
+	result := ""
+
+	for k, v := range env {
+		result += "$" + k + ": " + v + "\n"
+	}
+
+	return result
 }
